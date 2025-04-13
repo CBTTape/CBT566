@@ -1,0 +1,150 @@
+&GEN     SETC  'GEN'
+***********************************************************************
+*        DUMP THE ACEE AND UTOKEN CONTROL BLOCKS - RACF RELATED       *
+***********************************************************************
+         SPACE 3
+*--------------------------------------------------------------------*
+*              REGISTER AND OTHER EQUATES                            *
+*--------------------------------------------------------------------*
+         SPACE 3
+R0       EQU   0
+R1       EQU   1
+R2       EQU   2
+R3       EQU   3
+R4       EQU   4
+R5       EQU   5
+R6       EQU   6
+R7       EQU   7
+R8       EQU   8
+R9       EQU   9
+R10      EQU   10
+R11      EQU   11
+R12      EQU   12
+R13      EQU   13
+R14      EQU   14
+R15      EQU   15
+         SPACE 2
+*--------------------------------------------------------------------*
+*              $$SUB MACRO         NEEDED BY PRTDUMP                 *
+*--------------------------------------------------------------------*
+         PRINT OFF
+         MACRO
+&L       $$SUB
+&L       STM   R14,R12,12(R13)     SAVE REGS
+         LA    R14,72(,R13)        NEXT SAVE
+         ST    R14,8(,R13)         CHAIN
+         ST    R13,4(,R14)          SAVE
+         LR    R13,R14             NEW SAVE
+         MEND
+         PRINT ON
+         EJECT
+DUMPACEE TITLE 'DUMPACEE - '
+DUMPACEE AMODE 31
+DUMPACEE RMODE 24
+DUMPACEE CSECT
+         SAVE  (14,12),T,'DUMPACEE_&SYSDATC._&SYSTIME.'
+         LR    R12,R15            POINT BASE REGISTER TO ENTRY POINT
+         USING DUMPACEE,R12
+         LA    R2,SAVEAREA        POINT TO SAVEAREA
+         ST    R13,SAVEAREA+4     POINTER TO CALLERS SAVEAREA
+         ST    R2,8(,R13)         POINTER TO CALLED SAVEAREA
+         LR    R13,R2             STANDARD POINTER TO SAVEAREA
+*--------------------------------------------------------------------*
+*              GET ACEE ADDRESS                                      *
+*--------------------------------------------------------------------*
+         L     R2,X'224'           GET ASCB ADDRESS
+         L     R2,X'6C'(,R2)       POINT TO ASXB
+         L     R2,X'C8'(,R2)       POINT TO ACEE
+         ST    R2,SAVEACEE         SAVE ACEE POINTER
+         LR    R4,R2
+         USING ACEE,R4
+         LA    R0,0                CLEAR REGISTER
+         ICM   R0,7,5(R4)          PICK UP ENTRY LENGTH
+         CVD   R0,DEC
+         MVC   DEC+08(6),=X'402020202120'
+         ED    DEC+08(6),DEC+5
+         MVC   MSG1+30(4),DEC+08+2
+         ST    R0,DEC
+         UNPK  DEC+8(05),DEC+2(3)
+         MVC   MSG1+35(3),DEC+8+1
+         TR    MSG1+35(3),TRANS-240
+         LA    R1,MSG1
+         BAL   R14,PRTDMSG
+         LR    R1,R4
+         BAL   R14,PRTDUMP
+         LA    R0,0                CLEAR REGISTER
+         ICM   R0,7,5(R4)          PICK UP ENTRY LENGTH
+         LA    R1,MSG2
+         BAL   R14,PRTDMSG
+*--------------------------------------------------------------------*
+*              GET UTOKEN ADDRESS                                    *
+*--------------------------------------------------------------------*
+         L     R4,X'A4'(,R4)       UTOKEN ADDR
+         DROP  R4
+         USING TOKEN,R4
+         LA    R0,0                CLEAR REGISTER
+         IC    R0,TOKLEN           PICK UP ENTRY LENGTH
+         CVD   R0,DEC
+         MVC   DEC+08(6),=X'402020202120'
+         ED    DEC+08(6),DEC+5
+         MVC   MSG1+30(4),DEC+08+2
+         MVC   MSG1+16(4),=C'TOKP'    MAKE IT TOKP
+         MVC   MSG2+16(4),=C'TOKP'
+         ST    R0,DEC
+         UNPK  DEC+8(05),DEC+2(3)
+         MVC   MSG1+35(3),DEC+8+1
+         TR    MSG1+35(3),TRANS-240
+         LA    R1,MSG1
+         BAL   R14,PRTDMSG
+         LR    R1,R4
+         BAL   R14,PRTDUMP
+         LA    R0,0                CLEAR REGISTER
+         IC    R0,TOKLEN           PICK UP ENTRY LENGTH
+         LA    R1,MSG2
+         BAL   R14,PRTDMSG
+*--------------------------------------------------------------------*
+*              GET ACEX ADDRESS                                      *
+*--------------------------------------------------------------------*
+         L     R2,SAVEACEE           GET ACEE ADDRESS
+         L     R2,X'98'(,R2)         POINT TO ACEX
+         LR    R4,R2
+         LA    R0,0
+         LA    R0,X'90'              LENGTH OF ACEX?
+         CVD   R0,DEC
+         MVC   DEC+08(6),=X'402020202120'
+         ED    DEC+08(6),DEC+5
+         MVC   MSG1+30(4),DEC+08+2
+         MVC   MSG1+16(4),=C'ACEX'    MAKE IT ACEX
+         MVC   MSG2+16(4),=C'ACEX'
+         ST    R0,DEC
+         UNPK  DEC+8(05),DEC+2(3)
+         MVC   MSG1+35(3),DEC+8+1
+         TR    MSG1+35(3),TRANS-240
+         LA    R1,MSG1
+         BAL   R14,PRTDMSG
+         LR    R1,R4
+         BAL   R14,PRTDUMP
+         LA    R0,0                CLEAR REGISTER
+         LA    R0,X'90'            PICK UP ENTRY LENGTH
+         LA    R1,MSG2
+         BAL   R14,PRTDMSG
+         L     R13,4(,R13)
+         RETURN (14,12),RC=0
+MSG1     WTO   '*** DUMP OF ACEE - LENGTH=XXXX/XXX ***',MF=L,          X
+               ROUTCDE=11
+MSG2     WTO   '*** END  OF ACEE ***',MF=L,ROUTCDE=11
+SAVEAREA DS    (4*9)D'0'
+SAVEACEE DS    F
+DEC      DS    2D
+TRANS    DC    C'0123456789ABCDEF'
+         SPACE 2
+         COPY  PRTDUMP
+         PRINT GEN
+         LTORG ,
+         IHAASCB
+         IHAASXB
+         IHAACEE
+         ICHRUTKN
+         CVT   DSECT=YES,LIST=YES
+         END
+         COPY  EPUTL

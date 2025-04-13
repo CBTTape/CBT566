@@ -1,0 +1,39 @@
+         MACRO
+         IKJXPRM
+XPRM     DSECT                         INMXPARM Control Table
+XPRM_ID  DC    C'INMXPARM'             Block id
+XPRM_LEN DS    H                       Length of XPRM
+XPRM_NJE# DS   H                       Count of NJE/SMF id's
+XPRM_NJE_START DS A(XPRM_NODE)         A(start NJE/SMF id's)
+XPRM_VERS  DS  X'02',3X                version number          HTE26D2
+XPRM_WARN1 DS  F                       OUTWARN 1
+XPRM_WARN2 DS  F                       OUTWARN 2
+XPRM_LIM DS    F                       Outlim
+         DS    F,F,H                   ?                         SG0106
+XPRM_VIO_U_SIZE DS H                   Length of VIO unit name   SG0106
+XPRM_VIO_U DS  CL8                     VIO unit name
+         DS    F,F                     ?
+XPRM_SW  DS    X                       Cipher flag
+XPRM_CIPHER_NO EQU X'10'               Cipher - NO
+XPRM_CIPHER_ALWAYS EQU X'20'           Cipher - ALWAYS
+XPRM_CIPHER_YES EQU X'40'              Cipher - YES
+XPRM_USERID EQU X'08'                  Daprefix - userid
+         DS    X                       ?
+XPRM_SOUT DS   C                       SYSOUT class
+         DS    C                       ?                         SG1205
+XPRM_LOGNAME DS CL8                    LOGNAME
+         DS    H                       ?
+XPRM_LOGSEL_1 DS C                     '*'
+XPRM_LOGSEL DS  CL8                    LOGSEL name
+XPRM_LOGSEL_SIZE DS H                  LOGSEL size (halfword)    SG0106
+XPRM_SYSCTL DS CL44                    SYSCTL name
+XPRM_SYSCTL_SIZE DS H                  SYSCTL size (halfword)    SG0106
+XPRM_USRCTL DS CL44                    USRCTL name
+XPRM_USRCTL_SIZE DS H                  USRCTL size (halfword)    SG0106
+XPRM_SPOOLCL DS C                      SPOOL CLASS
+         ORG   XPRM+X'0F0'             filler                  HTE26D2
+XPRM_NODE DS   CL8                     NJE node name
+XPRM_SMF DS    CL4                     SMF ID
+         DS    XL4
+XPRM_NS_L EQU  *-XPRM_NODE             Length of a pair
+         MEND

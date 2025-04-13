@@ -1,0 +1,127 @@
+&GEN     SETC  'GEN'
+***********************************************************************
+*        DUMP THE CVT CONTROL BLOCK AND PART OF THE PREFIX            *
+***********************************************************************
+         SPACE 3
+*--------------------------------------------------------------------*
+*    ALL OF THE WORK HERE WAS DONE BY SAM BASS.  WHAT WAS NECESSARY  *
+*    TO DUMP THE STORAGE, WAS TO SUPPLY A BEGINNING ADDRESS TO       *
+*    DUMP, AND THE LENGTH OF STORAGE TO DUMP.  THIS WAS DONE BY      *
+*    SAM GOLOB.  THE REST WAS DONE BY SAM BASS.                      *
+*--------------------------------------------------------------------*
+*    YOU CAN DO IT TOO.  JUST SUPPLY THE CONTROL BLOCK INFORMATION   *
+*    BELOW, AND LET THE PROGRAM DO THE REST OF THE WORK.       .     *
+*--------------------------------------------------------------------*
+*    CVT LENGTH IS HARD CODED FOR Z/OS 3.1. PLEASE REVIEW THE CODE.  *
+*    CHECK THE LENGTH OF THE CVT IN OTHER Z/OS RELEASES, AND         *
+*    MANUALLY ADJUST THE CVTLEN FIELD ACCORDINGLY.                   *
+*--------------------------------------------------------------------*
+*  DISPLACEMENTS INTO THE CVT:                                      -*
+*                                                                   -*
+*  THE CVT ASSEMBLY ADDRESS STARTING WITH X'000', DOES NOT POINT    -*
+*  TO THE BEGINNING OF THE CVT (FROM ADDRESS X'10'), BUT IT POINTS  -*
+*  TO  X'28' BEFORE THAT.  THEREFORE WHEN YOU LOOK FOR ADDRESSES    -*
+*  IN AN ASSEMBLY OF THE CVT, OFF THE BEGINNING, X'10' ADDRESS, YOU -*
+*  HAVE TO SUBTRACT X'28' (DEC 40).  WHEN THIS PROGRAM SHOWS CVT    -*
+*  ADDRESS, IT IS ACCURATE AND POINTS OFF THE X'10' ADDRESS.  I     -*
+*  CHOSE TO DO THIS BECAUSE I HATE SUBTRACTING X'28' ALL THE TIME.  -*
+*  THE FIRST X'28' BYTES ARE SHOWN SEPARATELY AS THE CVT PREFIX.    -*
+*                                                                   -*
+*  ACTUALLY THE FIRST X'40' BYTES BEFORE THE CVT ARE SHOWN AS THE   -*
+*  PREFIX, BECAUSE THEY CONTAIN USEFUL INFORMATION.                 -*
+*--------------------------------------------------------------------*
+*              REGISTER AND OTHER EQUATES                            *
+*--------------------------------------------------------------------*
+         YREGS
+*--------------------------------------------------------------------*
+*              $$SUB MACRO         NEEDED BY PRTDUMP                 *
+*--------------------------------------------------------------------*
+         PRINT OFF
+         MACRO
+&L       $$SUB
+&L       STM   R14,R12,12(R13)     SAVE REGS
+         LA    R14,72(,R13)        NEXT SAVE
+         ST    R14,8(,R13)         CHAIN
+         ST    R13,4(,R14)          SAVE
+         LR    R13,R14             NEW SAVE
+         MEND
+         PRINT ON
+         EJECT
+DUMPCVT  TITLE 'DUMPCVT - '
+DUMPCVT  AMODE 31
+DUMPCVT  RMODE 24
+DUMPCVT  CSECT
+         SAVE  (14,12),T,'DUMPCVT_&SYSDATC._&SYSTIME.'
+         LR    R12,R15            POINT BASE REGISTER TO ENTRY POINT
+         USING DUMPCVT,R12
+         LA    R2,SAVEAREA        POINT TO SAVEAREA
+         ST    R13,SAVEAREA+4     POINTER TO CALLERS SAVEAREA
+         ST    R2,8(,R13)         POINTER TO CALLED SAVEAREA
+         LR    R13,R2             STANDARD POINTER TO SAVEAREA
+*--------------------------------------------------------------------*
+*              DUMP CVT PREFIX                                       *
+*--------------------------------------------------------------------*
+         L     R2,X'10'            GET CVT ADDRESS - CVT FIRST
+         LR    R4,R2               USE ANOTHER REGISTER
+         LA    R8,0                CLEAR WORK REGISTER
+         ICM   R8,1,=X'40'         STUFF THE SUBTRACT TO A FULLWORD
+         SR    R4,R8               GO BEHIND THE X'10' CVT ADDRESS
+         LA    R0,PREFLEN          PICK UP SIGNIFICANT PREFIX LENGTH
+         CVD   R0,DEC              LENGTH TO DUMP FOR "PREFIX"
+         MVC   DEC+08(6),=X'402020202120'
+         ED    DEC+08(6),DEC+5
+         MVC   MSG0+30(4),DEC+08+2
+         ST    R0,DEC
+         UNPK  DEC+8(05),DEC+2(3)
+         MVC   MSG0+35(3),DEC+8+1
+         TR    MSG0+35(3),TRANS-240
+         LA    R1,MSG0
+         BAL   R14,PRTDMSG         PRINT DUMP ENTRY MESSAGE
+         LR    R1,R4
+         BAL   R14,PRTDUMP         DUMP THE STORAGE
+         LA    R0,PREFLEN          PICK UP ENTRY LENGTH
+         LA    R1,MSG3             LOAD DUMP EXIT MESSAGE
+         BAL   R14,PRTDMSG         PRINT DUMP EXIT MESSAGE
+         B     DUMPCVTM            NOW DUMP THE CVT PROPER
+PREFLEN  EQU   X'40'
+SAVER8A  DS    F
+*--------------------------------------------------------------------*
+*              DUMP CVT                                              *
+*--------------------------------------------------------------------*
+DUMPCVTM DS    0H
+         L     R4,X'10'            GET CVT ADDRESS - CVT FIRST
+         LA    R0,CVTLEN           PICK UP CVT LENGTH
+         CVD   R0,DEC              TOTAL LENGTH TO DUMP
+         MVC   DEC+08(6),=X'402020202120'
+         ED    DEC+08(6),DEC+5
+         MVC   MSG1+30(4),DEC+08+2
+         ST    R0,DEC
+         UNPK  DEC+8(05),DEC+2(3)
+         MVC   MSG1+35(3),DEC+8+1
+         TR    MSG1+35(3),TRANS-240
+         LA    R1,MSG1
+         BAL   R14,PRTDMSG         PRINT DUMP ENTRY MESSAGE
+         LR    R1,R4
+         BAL   R14,PRTDUMP         DUMP THE CVT STORAGE
+         LA    R0,CVTLEN           PICK UP ENTRY LENGTH
+         LA    R1,MSG2             LOAD DUMP EXIT MESSAGE
+         BAL   R14,PRTDMSG         PRINT DUMP EXIT MESSAGE
+         L     R13,4(,R13)
+         RETURN (14,12),RC=0
+CVTLEN   EQU   X'5E4'              CHECK TO SEE IF CHANGED W/RELEASE
+MSG0     WTO   '*** DUMP CVTPREF - LENGTH=XXXX/XXX ***',MF=L,          X
+               ROUTCDE=11
+MSG1     WTO   '*** DUMP OF CVT  - LENGTH=XXXX/XXX ***',MF=L,          X
+               ROUTCDE=11
+MSG2     WTO   '*** END  OF CVT ***',MF=L,ROUTCDE=11
+MSG3     WTO   '*** END CVTPREF ***',MF=L,ROUTCDE=11
+SAVEAREA DS    (4*9)D'0'
+DEC      DS    2D
+TRANS    DC    C'0123456789ABCDEF'
+         SPACE 2
+         COPY  PRTDUMP
+         PRINT GEN
+         LTORG ,
+         CVT   DSECT=YES,LIST=YES
+         END
+         COPY  EPUTL

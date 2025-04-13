@@ -1,0 +1,12 @@
+More DUMP**** members added:       (Sam Golob)
+
+DUMPTSVT was added to dump the TSVT and TPVT control blocks.
+         There is no IBM-distributed macro that describes the
+         TPVT (TSO Parmlib Vector Table), so we have supplied
+         the requisite macro in this pds.  (Good thru z/OS 2.5)
+
+DUMPASSB was added to dump the ASSB control block.  (31-bit)
+
+DUMPRCVT was added to dump the RACF CVT control block.
+
+

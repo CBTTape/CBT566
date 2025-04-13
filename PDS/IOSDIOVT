@@ -1,0 +1,122 @@
+         MACRO
+         IOSDIOVT
+IOVT     DSECT                         IOS Vector Table          ESA41
+         DS    C'IOVT'          000
+         DS    H'476'           004    Length of IOVT            RS1106
+         DS    XL2              006
+IOVTUL31 DS    V(ULUT)          008    UCB LOOK-UP TABLE (fullword)
+         DS    A                00C    Address of IOSVUSER
+         DS    A                010    Address of IOSVASIM
+         DS    A                014    Address of IOSVCCMI
+IOVTCDA  DS    V(CDA)           018    Config Data Area
+         DS    1F               01C    RESERVED
+         DS    A                020    IASC ??
+         DS    A                024    IOS PIN QUEUE HEADERS
+         DS    A                028    IOS PIN QUEUE ELEMENTS
+         DS    1F               02C    ???
+         DS    A                030    TQE   (ZEROES)
+         DS    A                034    ???
+         DS    A                038    CSC Address of IOSVCHSQ
+         DS    A                03C    ???
+         DS    A                040    ???
+         DS    F'180'           044    ???
+         DS    A                048    RESERVED
+         DS    A                04C    CSC
+         DS    1F               050    RESERVED
+         DS    A                054    IOS 31 BIT DST ENTRIES
+         DS    A                058    IOS 24 BIT DST ENTRIES
+         DS    1F               05C    RESERVED
+         DS    A                060    IOS UCB SERVICES PC RTN
+         DS    A                064    IODE
+         DS    F                068    ???
+         DS    F                06C    Address of IQPRRTRM
+         DS    F                070    ???
+         DS    A                074    IOS HASH
+         DS    A                078    IOS UCB HASH COLLISIONS
+         DS    1F               07C    Address of IOSVUXLC
+         DS    A                080    DDT
+         DS    A                084    DDT
+         DS    A                088    DDT
+         DS    F                08C    ???
+         DS    F                090    ???
+         DS    F                094    ???
+         DS    F                098    ???
+         DS    A                09C    CAPT  (ZEROES)
+         DS    F                0A0    Address of IOSVIOSN
+         DS    F                0A4    ???
+         DS    A                0A8    DDT
+         DS    A                0AC    DDT
+         DS    1F               0B0    SLCH
+         DS    A                0B4    DDT
+         DS    A                0B8    IOS CAPTURE UCB SERVICE
+         DS    A                0BC    TRCB
+         DS    F                0C0    RESERVED
+         DS    F                0C4    RESERVED
+         DS    1F               0C8    Address of IOSTRRCD
+         DS    A                0CC    MGFQ
+         DS    A                0D0    CMVT
+         DS    A                0D4    CPCT
+         DS    1F               0D8    ???
+         DS    1F               0DC    Address of IOSCDCM
+         DS    A                0E0    IXSD
+         DS    CL8'SYSIOS01'    0E4
+         DS    F                0EC    Address of IOSVENQ
+         DS    F                0F0    RESERVED
+         DS    F                0F4    ???
+         DS    F                0F8    Address of IRDVFSD
+         DS    F                0FC    RESERVED
+         DS    F                100    ???
+         DS    A                104    QDIO
+         DS    1F               108    ???
+         DS    A                10C    SAUT
+         DS    F                110    Address of IOSVWTOS
+         DS    F                114    RESERVED
+         DS    F                118    Address of IOSVQPIR
+         DS    F                11C    RESERVED
+         DS    A                120    IOS PURGE WORK AREAS
+IOVTFLG1 DS    X                124    IOVT-Flag
+IOVTMIDAW EQU   X'08'                  MIDAW ON?
+         DS    XL3              125    ???
+         DS    A                128    CCAP
+         DS    A                12C    Address of IOSVDFS
+         DS    A                130    Address of IOSVPSIN
+         DS    A                134    Address of IOSVCADS
+         DS    A                138    Flags ?
+         DS    A                13C    Address of IOSVFCXS
+         DS    A                140    NDII
+         DS    A                144    Address of IOSVQSCD
+         DS    A                148    Address of IOSVTRAN
+         DS    A                14C    Flags ?
+         DS    F                150    Address of IOSVZHPF
+         DS    3F               154    RESERVED
+         DS    4F               160    RESERVED
+         DS    F                170    Flags ?
+         DS    F                174    RESERVED
+         DS    A                178    Address of IOSVIOPH
+         DS    F                17C    RESERVED
+         DS    A                180    Address of IOSVSWDG
+         DS    A                184    Address of IOSVCOPF
+         DS    2F               188    RESERVED
+         DS    D                190    8-byte address of HCOMHD
+         DS    A                198    Address of IOSVDSTF
+         ORG   IOVT+424                0x1A8
+         DS    A                1A8    Address of IOSVIO
+         DS    H                1AC    Flags ?
+         DS    H                1AE    Flags ?
+         ORG   IOVT+432                0x1B0                     JH1214
+         DS    A                1B0    Address of FPZRATTM
+         DS    A                1B4    Address of IOSVHCRQ
+IOVTULUT DS    D                1B8    UCB V3 look-up table      JH1214
+         DS    H                1C0    Flags ?
+         DS    H                1C2    RESERVED
+         DS    F                1C4    RESERVED
+         DS    F                1C8    RESERVED
+         DS    A                1CC    Address of IOSVHPFE
+         DS    A                1D0    Address of IOSVSCM
+         DS    A                1D4    Address of IOSVQSCD
+         DS    F                1D8    RESERVED
+         DS    F                1DC    RESERVED
+         ORG   ,                                                 JH1214
+         DS    5D               1E0    RESERVED
+IOVTEND  EQU   *-IOVT           208
+         MEND
